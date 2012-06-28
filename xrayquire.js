@@ -20,6 +20,11 @@ var xrayquire;
         s = requirejs.s,
         oldNewContext = s.newContext,
         tokenRegExp = /\{(\w+)\}/g,
+        standardDeps = {
+            require: true,
+            exports: true,
+            module: true
+        },
         prop;
 
     function each(ary, func) {
@@ -82,7 +87,8 @@ var xrayquire;
             mixedCases = xray.mixedCases;
 
         function trackModule(mod) {
-            var id = mod.map.id;
+            var id = mod.map.id,
+                traceData;
 
             //If an intermediate module from a plugin, do not
             //track it
@@ -95,7 +101,7 @@ var xrayquire;
             //modules as they are encountered, and not as they
             //are fetched/loaded, since things could fall over between
             //now and then.
-            if (!traced[id]) {
+            if (!traced[id] || !traced[id].deps || !traced[id].deps.length) {
                 each(mod.depMaps, function (dep) {
                     var depId = dep.id,
                         lowerId = depId.toLowerCase();
@@ -118,11 +124,20 @@ var xrayquire;
                     }
                 });
 
-                traced[id] = {
+                traceData = {
                     map: mod.map,
                     deps: mod.depMaps
                 };
-                xray.traceOrder.push(id);
+
+                //Only add this to the order if not previously added.
+                if (!traced[id]) {
+                    xray.traceOrder.push(id);
+                }
+
+                //Set the data again in case this enable has the
+                //real dependencies. Some first calls of enable do
+                //not have the dependencies known yet.
+                traced[id] = traceData;
             }
         }
 
@@ -188,8 +203,9 @@ var xrayquire;
      * Public API
      */
     xrayquire = {
-        treeHtml: '<!DOCTYPE html>\n<html>\n<head>\n<style>\nbody {\n    font-family: \"Inconsolata\",Andale Mono,Monaco,Monospace;\n    color: green;\n}\n\na {\n    color: #2E87DD;\n    text-decoration: none;\n}\n\na:hover {\n    text-decoration: underline;\n}\n\n.mod {\n    background-color: #FAFAFA;\n    border: 1px solid #E6E6E6;\n    border-radius: 5px 5px 5px 5px;\n    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);\n    font-size: 13px;\n    line-height: 18px;\n    margin: 7px 0 21px;\n    overflow: auto;\n    padding: 5px 10px;\n}\n\n.url {\n    font-size: smaller;\n    color: grey;\n}\n\n</style>\n</head>\n<body>\n{content}\n</body>\n</html>\n',
+        treeHtml: '<!DOCTYPE html>\n<html>\n<head>\n<title>Module Dependencies</title>\n<style>\nbody {\n    font-family: \"Inconsolata\",Andale Mono,Monaco,Monospace;\n    color: green;\n}\n\na {\n    color: #2E87DD;\n    text-decoration: none;\n}\n\na:hover {\n    text-decoration: underline;\n}\n\n.mod {\n    background-color: #FAFAFA;\n    border: 1px solid #E6E6E6;\n    border-radius: 5px 5px 5px 5px;\n    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);\n    font-size: 13px;\n    line-height: 18px;\n    margin: 7px 0 21px;\n    overflow: auto;\n    padding: 5px 10px;\n}\n\n.url {\n    font-size: smaller;\n    color: grey;\n}\n\nli.standard {\n    color: grey;\n}\n\n</style>\n</head>\n<body>\n{content}\n</body>\n</html>\n',
         treeDepItemHtml: '<li><a href=\"#mod-{htmlId}\">{id}</a></li>',
+        treeDepItemNoLinkHtml: '<li class=\"standard\">{id}</li>',
         treeItemHtml: '<div class=\"mod\" id=\"mod-{htmlId}\">\n    <span class=\"id\">{id}</span>\n    <span class=\"url\">{url}</span>\n    <ul class=\"deps\">\n        {depItems}\n    </ul>\n</div>\n',
 
         makeHtmlId: function (id) {
@@ -231,7 +247,11 @@ var xrayquire;
                 templateData.depItems = '';
 
                 each(mod.deps, function (dep) {
-                    templateData.depItems += template(xrayquire.treeDepItemHtml,
+                    var depHtmlTemplate = standardDeps[dep.id] ?
+                                          xrayquire.treeDepItemNoLinkHtml :
+                                          xrayquire.treeDepItemHtml;
+
+                    templateData.depItems += template(depHtmlTemplate,
                                              xrayquire.makeTemplateData(dep));
                 });
 

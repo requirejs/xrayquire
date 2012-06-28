@@ -27,11 +27,13 @@ var fs = require('fs'),
     contents = read(dir + '../xrayquire.js'),
     tree = jsRead(dir + 'templates/tree.html'),
     treeDepItem = jsRead(dir + 'templates/treeDepItem.html'),
+    treeDepItemNoLink = jsRead(dir + 'templates/treeDepItemNoLink.html'),
     treeItem = jsRead(dir + 'templates/treeItem.html');
 
 contents = contents
            .replace(/treeHtml: '.*?',[\r\n]/, "treeHtml: '" + tree + "',\n")
            .replace(/treeDepItemHtml: '.*?',[\r\n]/, "treeDepItemHtml: '" + treeDepItem + "',\n")
+           .replace(/treeDepItemNoLinkHtml: '.*?',[\r\n]/, "treeDepItemNoLinkHtml: '" + treeDepItemNoLink + "',\n")
            .replace(/treeItemHtml: '.*?',[\r\n]/, "treeItemHtml: '" + treeItem + "',\n");
 
 fs.writeFileSync(dir + '../xrayquire.js', contents, 'utf8');
