@@ -54,6 +54,35 @@ var xrayquire;
         }
     }
 
+    function hasProp(obj, prop) {
+        return obj.hasOwnProperty(prop);
+    }
+
+    /**
+     * Simple function to mix in properties from source into target,
+     * but only if target does not already have a property of the same name.
+     * This is not robust in IE for transferring methods that match
+     * Object.prototype names, but the uses of mixin here seem unlikely to
+     * trigger a problem related to that.
+     */
+    function mixin(target, source, force, deepStringMixin) {
+        if (source) {
+            eachProp(source, function (value, prop) {
+                if (force || !hasProp(target, prop)) {
+                    if (deepStringMixin && typeof value !== 'string') {
+                        if (!target[prop]) {
+                            target[prop] = {};
+                        }
+                        mixin(target[prop], value, force, deepStringMixin);
+                    } else {
+                        target[prop] = value;
+                    }
+                }
+            });
+        }
+        return target;
+    }
+
     function isRequire(id) {
         return id.indexOf('_@r') !== -1;
     }
@@ -178,6 +207,14 @@ var xrayquire;
     };
 
 
+    function sortTraceOrder(traceOrder) {
+        //Sort the traceOrder, but do it by lowercase comparisons,
+        //to keep 'something' and 'Something' next to each other.
+        traceOrder.sort(function (a, b) {
+            return a.toLowerCase() > b.toLowerCase() ? 1 : -1;
+        });
+    }
+
     function htmlEscape(id) {
         return (id || '')
             .replace('<', '&lt;')
@@ -197,6 +234,58 @@ var xrayquire;
 
             return result;
         });
+    }
+
+
+    function findCycle(mod, traced, masterVisited, visited) {
+        var id = mod.map.id,
+            depArray = mod.deps,
+            foundModule;
+
+        //Do not bother with require calls or standard deps,
+        //or things that are already listed in a cycle
+        if (isRequire(id) || masterVisited[id] || standardDeps[id]) {
+            return;
+        }
+
+        //Found the cycle.
+        if (visited[id]) {
+            return {
+                mod: mod,
+                visited: visited
+            };
+        }
+
+        visited[id] = true;
+
+        //Trace through the dependencies.
+        each(depArray, function (depMap) {
+            var depId = depMap.id,
+                depMod = traced[depId];
+
+            if (!depMod) {
+                return;
+            }
+
+            //mixin visited to a new object for each dependency, so that
+            //sibling dependencies in this object to not generate a
+            //false positive match on a cycle. Ideally an Object.create
+            //type of prototype delegation would be used here, but
+            //optimizing for file size vs. execution speed since hopefully
+            //the trees are small for circular dependency scans relative
+            //to the full app perf.
+            return (foundModule = findCycle(depMod, traced, masterVisited, mixin({}, visited)));
+        });
+
+        return foundModule;
+    }
+
+    function showHtml(html) {
+        //Convert to URL encoded data
+        html = encodeURIComponent(html);
+
+        //Display the HTML
+        window.open('data:text/html;charset=utf-8,' + html, '_blank');
     }
 
     /**
@@ -220,18 +309,13 @@ var xrayquire;
             };
         },
 
-        showTree: function (context) {
-            context = context || requirejs.s.contexts._;
-
-            var xray = getX(context),
+        showTree: function (contextName) {
+            var context = requirejs.s.contexts[contextName || '_'],
+                xray = getX(context),
                 traced = xray.traced,
                 html = '';
 
-            //Sort the traceOrder, but do it by lowercase comparisons,
-            //to keep 'something' and 'Something' next to each other.
-            xray.traceOrder.sort(function (a, b) {
-                return a.toLowerCase() > b.toLowerCase() ? 1 : -1;
-            });
+            sortTraceOrder(xray.traceOrder);
 
             //Generate the HTML
             each(xray.traceOrder, function (id) {
@@ -263,11 +347,70 @@ var xrayquire;
                 content: html
             });
 
-            //Convert to URL encoded data
-            html = encodeURIComponent(html);
+            showHtml(html);
+        },
 
-            //Display the HTML
-            window.open('data:text/html;charset=utf-8,' + html, '_blank');
+        getCycles: function (contextName) {
+            var context = requirejs.s.contexts[contextName || '_'],
+                cycles = {},
+                xray = getX(context),
+                traced = xray.traced,
+                masterVisited = {},
+                foundCycle = false;
+
+            sortTraceOrder(xray.traceOrder);
+
+            each(xray.traceOrder, function (id) {
+                var mod = traced[id],
+                    cycleInfo = findCycle(mod, traced, masterVisited, {});
+
+                if (cycleInfo) {
+                    foundCycle = true;
+                    mod = cycleInfo.mod;
+                    mixin(masterVisited, cycleInfo.visited);
+
+                    cycles[mod.map.id] = {
+                        visited: cycleInfo.visited
+                    };
+                }
+            });
+
+            return foundCycle ? cycles : null;
+        },
+
+        cycleHtml: '<!DOCTYPE html>\n<html>\n<head>\n<title>Module Cycles</title>\n<style>\nbody {\n    font-family: \"Inconsolata\",Andale Mono,Monaco,Monospace;\n    color: green;\n}\n\na {\n    color: #2E87DD;\n    text-decoration: none;\n}\n\na:hover {\n    text-decoration: underline;\n}\n\n.mod {\n    background-color: #FAFAFA;\n    border: 1px solid #E6E6E6;\n    border-radius: 5px 5px 5px 5px;\n    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);\n    font-size: 13px;\n    line-height: 18px;\n    margin: 7px 0 21px;\n    overflow: auto;\n    padding: 5px 10px;\n}\n\n</style>\n</head>\n<body>\n{content}\n</body>\n</html>\n',
+        cycleEntryHtml: '<div class=\"mod\">\n    <span class=\"id\">{id}</span>\n    <ul class=\"chain\">\n        {chain}\n    </ul>\n</div>\n',
+        cycleChainEntryHtml: '<li>{id}</li>',
+
+        showCycles: function (contextName) {
+            var cycles = xrayquire.getCycles(contextName),
+                html = '';
+
+            if (cycles) {
+                eachProp(cycles, function (cycle, id) {
+                    var chainHtml = '';
+                    eachProp(cycle.visited, function (value, cycleId) {
+                        if (cycleId !== id) {
+                            chainHtml += template(xrayquire.cycleChainEntryHtml, {
+                                id: cycleId
+                            });
+                        }
+                    });
+
+                    html += template(xrayquire.cycleEntryHtml, {
+                        id: id,
+                        chain: chainHtml
+                    });
+                });
+            } else {
+                html = 'No cycles found';
+            }
+
+            html = template(xrayquire.cycleHtml, {
+                content: html
+            });
+
+            showHtml(html);
         }
     };
 }());

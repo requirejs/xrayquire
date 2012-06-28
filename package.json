@@ -1,4 +1,5 @@
 {
+    "name": "xrayquire",
     "volo": {
         "url": "https://raw.github.com/requirejs/xrayquire/{version}/xrayquire.js"
     }

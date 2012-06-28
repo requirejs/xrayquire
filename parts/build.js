@@ -25,15 +25,25 @@ function jsRead(path) {
 var fs = require('fs'),
     dir = __dirname + '/',
     contents = read(dir + '../xrayquire.js'),
+
     tree = jsRead(dir + 'templates/tree.html'),
     treeDepItem = jsRead(dir + 'templates/treeDepItem.html'),
     treeDepItemNoLink = jsRead(dir + 'templates/treeDepItemNoLink.html'),
-    treeItem = jsRead(dir + 'templates/treeItem.html');
+    treeItem = jsRead(dir + 'templates/treeItem.html'),
+
+    cycle = jsRead(dir + 'templates/cycle.html'),
+    cycleEntry = jsRead(dir + 'templates/cycleEntry.html'),
+    cycleChainEntry = jsRead(dir + 'templates/cycleChainEntry.html');
 
 contents = contents
            .replace(/treeHtml: '.*?',[\r\n]/, "treeHtml: '" + tree + "',\n")
            .replace(/treeDepItemHtml: '.*?',[\r\n]/, "treeDepItemHtml: '" + treeDepItem + "',\n")
            .replace(/treeDepItemNoLinkHtml: '.*?',[\r\n]/, "treeDepItemNoLinkHtml: '" + treeDepItemNoLink + "',\n")
-           .replace(/treeItemHtml: '.*?',[\r\n]/, "treeItemHtml: '" + treeItem + "',\n");
+           .replace(/treeItemHtml: '.*?',[\r\n]/, "treeItemHtml: '" + treeItem + "',\n")
+
+           .replace(/cycleHtml: '.*?',[\r\n]/, "cycleHtml: '" + cycle + "',\n")
+           .replace(/cycleEntryHtml: '.*?',[\r\n]/, "cycleEntryHtml: '" + cycleEntry + "',\n")
+           .replace(/cycleChainEntryHtml: '.*?',[\r\n]/, "cycleChainEntryHtml: '" + cycleChainEntry + "',\n");
+
 
 fs.writeFileSync(dir + '../xrayquire.js', contents, 'utf8');
