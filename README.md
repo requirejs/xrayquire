@@ -24,6 +24,10 @@ You can use this link to download the latest master version:
 
 https://raw.github.com/requirejs/xrayquire/master/xrayquire.js
 
+or use [volo](https://github.com/volojs/volo) to fetch it for you:
+
+    volo add xrayquire
+
 ## Error checks
 
 ### Case insensitive ID collisions
