@@ -59,7 +59,7 @@ var xrayquire;
     }
 
     function formatUrl(url) {
-        return isRequire(url) ? '' : url;
+        return !url || isRequire(url) ? '' : url;
     }
 
     function getX(context) {
@@ -84,6 +84,12 @@ var xrayquire;
         function trackModule(mod) {
             var id = mod.map.id;
 
+            //If an intermediate module from a plugin, do not
+            //track it
+            if (mod.map.prefix && id.indexOf('_unnormalized') !== -1) {
+                return;
+            }
+
             //Cycle through the dependencies now, wire this up here
             //instead of context.load so that we get a recording of
             //modules as they are encountered, and not as they
@@ -94,7 +100,7 @@ var xrayquire;
                     var depId = dep.id,
                         lowerId = depId.toLowerCase();
 
-                    if (mixedCases[lowerId]) {
+                    if (mixedCases[lowerId] && depId !== mixedCases[lowerId].id) {
                         console.error('Mixed case modules may conflict: ' +
                                         formatId(mixedCases[lowerId].refId) +
                                         ' asked for: "' +
@@ -204,6 +210,12 @@ var xrayquire;
             var xray = getX(context),
                 traced = xray.traced,
                 html = '';
+
+            //Sort the traceOrder, but do it by lowercase comparisons,
+            //to keep 'something' and 'Something' next to each other.
+            xray.traceOrder.sort(function (a, b) {
+                return a.toLowerCase() > b.toLowerCase() ? 1 : -1;
+            });
 
             //Generate the HTML
             each(xray.traceOrder, function (id) {
