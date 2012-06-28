@@ -20,6 +20,10 @@ Place it as a script tag right after require.js:
 <script src="xrayrequire.js"></script>
 ```
 
+You can use this link to download the latest master version:
+
+https://raw.github.com/requirejs/xrayquire/master/xrayquire.js
+
 ## Error checks
 
 ### Case insensitive ID collisions
