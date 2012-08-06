@@ -17,7 +17,7 @@ Place it as a script tag right after require.js:
 
 ```html
 <script src="require.js"></script>
-<script src="xrayrequire.js"></script>
+<script src="xrayquire.js"></script>
 ```
 
 You can use this link to download the latest master version:
