@@ -43,6 +43,10 @@ views are shown by popping a new window to a data: URL that has the display.
 
 These displays are still very new, need lots of work.
 
+**Also note** that your browser may block the new windows from being shown,
+so be sure to allow the popup if the browser gives the popup supression
+warning.
+
 ### Dependency tree
 
 To see the dependency tree for all the modules loaded, enter the following in
