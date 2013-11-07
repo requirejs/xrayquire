@@ -280,12 +280,24 @@ var xrayquire;
         return foundModule;
     }
 
-    function showHtml(html) {
-        //Convert to URL encoded data
-        html = encodeURIComponent(html);
-
-        //Display the HTML
-        window.open('data:text/html;charset=utf-8,' + html, '_blank');
+    function showHtml(html, asIframe) {
+        if(asIframe){
+            var iframe = document.createElement("iframe");
+            document.body.appendChild(iframe);
+            // --
+            iframe.style.position    = "absolute";
+            iframe.style.zIndex      = 99999;
+            iframe.style.background  = "#888";
+            // --
+            var iframeDoc = iframe.contentWindow.document;
+            iframeDoc.body.innerHTML = html;
+        }else{
+            console.log(html);
+            //Convert to URL encoded data
+            html = encodeURIComponent(html);
+            //Display the HTML
+            window.open('data:text/html;charset=utf-8,' + html, '_blank');
+        }
     }
 
     /**
@@ -309,7 +321,7 @@ var xrayquire;
             };
         },
 
-        showTree: function (contextName) {
+        showTree: function (contextName, asIframe) {
             var context = requirejs.s.contexts[contextName || '_'],
                 xray = getX(context),
                 traced = xray.traced,
@@ -347,7 +359,7 @@ var xrayquire;
                 content: html
             });
 
-            showHtml(html);
+            showHtml(html, asIframe);
         },
 
         getCycles: function (contextName) {
@@ -382,7 +394,7 @@ var xrayquire;
         cycleEntryHtml: '<div class=\"mod\">\n    <span class=\"id\">{id}</span>\n    <ul class=\"chain\">\n        {chain}\n    </ul>\n</div>\n',
         cycleChainEntryHtml: '<li>{id}</li>',
 
-        showCycles: function (contextName) {
+        showCycles: function (contextName, asIframe) {
             var cycles = xrayquire.getCycles(contextName),
                 html = '';
 
@@ -410,7 +422,7 @@ var xrayquire;
                 content: html
             });
 
-            showHtml(html);
+            showHtml(html, asIframe);
         }
     };
 }());
