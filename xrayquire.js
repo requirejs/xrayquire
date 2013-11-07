@@ -288,6 +288,8 @@ var xrayquire;
             iframe.style.position    = "absolute";
             iframe.style.zIndex      = 99999;
             iframe.style.background  = "#888";
+            iframe.style.width       = "100%";
+            iframe.style.height      = "100%";
             // --
             var iframeDoc = iframe.contentWindow.document;
             iframeDoc.body.innerHTML = html;
