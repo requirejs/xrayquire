@@ -53,8 +53,9 @@ To see the dependency tree for all the modules loaded, enter the following in
 the browser developer tool's console:
 
     xrayquire.showTree();
-    // --
-    // or to open it in an iframe directly...
+    
+Or to open it in an iframe directly...
+
     xrayquire.showTree(null, true);
     
 
