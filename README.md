@@ -52,11 +52,15 @@ warning.
 To see the dependency tree for all the modules loaded, enter the following in
 the browser developer tool's console:
 
-    xrayquire.showTree()
+    xrayquire.showTree();
+    // --
+    // or to open it in an iframe directly...
+    xrayquire.showTree(null, true);
+    
 
 ### Show cycles
 
 To show cycles (circular dependencies) in the modules loaded, enter the
 following in the browser developer tool's console:
 
-    xrayquire.showCycles()
+    xrayquire.showCycles();
