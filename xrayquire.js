@@ -290,6 +290,8 @@ var xrayquire;
             iframe.style.background  = "#888";
             iframe.style.width       = "100%";
             iframe.style.height      = "100%";
+            iframe.style.top         = "0px";
+            iframe.style.left        = "0px";
             // --
             var iframeDoc = iframe.contentWindow.document;
             iframeDoc.body.innerHTML = html;
