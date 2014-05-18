@@ -20,6 +20,19 @@ Place it as a script tag right after require.js:
 <script src="xrayrequire.js"></script>
 ```
 
+If you only want to load it during certain types of debug scenarios, you could
+rely on passing a `?xray` to the page, and then dynamically insert the script
+tag for xrayquire.js like so:
+
+```html
+<script src="require.js"></script>
+<script>
+if (location.search.indexOf('xray') !== -1) {
+  document.write('<' + 'script src="xrayquire.js"></' + 'script>');
+}
+</script>
+```
+
 You can use this link to download the latest master version:
 
 https://raw.github.com/requirejs/xrayquire/master/xrayquire.js
