@@ -17,7 +17,7 @@ Place it as a script tag right after require.js:
 
 ```html
 <script src="require.js"></script>
-<script src="xrayrequire.js"></script>
+<script src="xrayquire.js"></script>
 ```
 
 If you only want to load it during certain types of debug scenarios, you could
@@ -56,16 +56,25 @@ views are shown by popping a new window to a data: URL that has the display.
 
 These displays are still very new, need lots of work.
 
+**Also note** that your browser may block the new windows from being shown,
+so be sure to allow the popup if the browser gives the popup supression
+warning.
+
 ### Dependency tree
 
 To see the dependency tree for all the modules loaded, enter the following in
 the browser developer tool's console:
 
-    xrayquire.showTree()
+    xrayquire.showTree();
+    
+Or to open it in an iframe directly...
+
+    xrayquire.showTree(null, true);
+    
 
 ### Show cycles
 
 To show cycles (circular dependencies) in the modules loaded, enter the
 following in the browser developer tool's console:
 
-    xrayquire.showCycles()
+    xrayquire.showCycles();
