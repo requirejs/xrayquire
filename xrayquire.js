@@ -1,7 +1,6 @@
 /**
- * @license xrayquire 0.0.0 Copyright (c) 2012, The Dojo Foundation All Rights Reserved.
- * Available via the MIT or new BSD license.
- * see: http://github.com/requirejs/xrayquire for details
+ * @license xrayquire 0.0.0 Copyright jQuery Foundation and other contributors.
+ * Released under MIT license, http://github.com/requirejs/xrayquire/LICENSE
  */
 /*jslint nomen: true */
 /*global requirejs, console, window */
