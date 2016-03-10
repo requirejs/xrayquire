@@ -66,11 +66,11 @@ To see the dependency tree for all the modules loaded, enter the following in
 the browser developer tool's console:
 
     xrayquire.showTree();
-    
+
 Or to open it in an iframe directly...
 
     xrayquire.showTree(null, true);
-    
+
 
 ### Show cycles
 
@@ -78,3 +78,11 @@ To show cycles (circular dependencies) in the modules loaded, enter the
 following in the browser developer tool's console:
 
     xrayquire.showCycles();
+
+## License
+
+MIT
+
+## Code of Conduct
+
+[jQuery Foundation Code of Conduct](https://jquery.org/conduct/).
